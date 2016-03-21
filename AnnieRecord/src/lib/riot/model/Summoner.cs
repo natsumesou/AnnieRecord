@@ -17,15 +17,5 @@ namespace AnnieRecord
             get;
             private set;
         }
-
-        public Summoner()
-        {
-            
-        }
-        public Summoner(String name, uint id)
-        {
-            this.name = name;
-            this.id = id;
-        }
     }
 }

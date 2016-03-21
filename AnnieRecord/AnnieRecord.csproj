@@ -65,8 +65,6 @@
     </ApplicationDefinition>
     <Compile Include="src\lib\riot\api\API.cs" />
     <Compile Include="src\lib\riot\api\BaseRepository.cs" />
-    <Compile Include="src\lib\riot\api\parser\BaseParser.cs" />
-    <Compile Include="src\lib\riot\api\parser\SummonerParser.cs" />
     <Compile Include="src\lib\riot\api\SummonerRepository.cs" />
     <Compile Include="src\lib\riot\model\BaseModel.cs" />
     <Compile Include="src\lib\riot\model\Summoner.cs" />

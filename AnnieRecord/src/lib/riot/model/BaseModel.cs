@@ -8,5 +8,6 @@ namespace AnnieRecord.src.lib.riot.model
 {
     class BaseModel
     {
+        public BaseModel() { }
     }
 }

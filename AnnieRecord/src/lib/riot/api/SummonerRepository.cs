@@ -13,6 +13,7 @@ namespace AnnieRecord
         {
             var request = API.Instance.buildRequest("/api/lol/na/v1.4/summoner/by-name/{summonerName}");
             request.AddUrlSegment("summonerName", summonerName);
+            request.RootElement = summonerName;
             var response = API.Instance.client.Execute<Summoner>(request);
             return response.Data;
         }

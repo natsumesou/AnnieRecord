@@ -17,7 +17,7 @@ namespace AnnieRecord
         }
         private String apiKey
         {
-            get { return System.Configuration.ConfigurationSettings.AppSettings["API_KEY"];  }
+            get { return "9655dc94-8557-43e7-9927-6606c68beb30"; }
         }
 
         private API()

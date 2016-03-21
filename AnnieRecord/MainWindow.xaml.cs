@@ -27,9 +27,9 @@ namespace AnnieRecord
 
         private void add_summoner(object sender, RoutedEventArgs e)
         {
-            //var summonerName = summonerNameTextBox.Text;
-            //var summoner = Riot.findSummoner(summonerName);
-            //System.Diagnostics.Debug.Write(summoner.id);
+            var summonerName = summonerNameTextBox.Text;
+            var summoner = Riot.findSummoner(summonerName);
+            System.Diagnostics.Debug.Write(summoner.id);
         }
     }
 }
