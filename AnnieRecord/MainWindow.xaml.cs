@@ -28,8 +28,15 @@ namespace AnnieRecord
         private void add_summoner(object sender, RoutedEventArgs e)
         {
             var summonerName = summonerNameTextBox.Text;
-            var summoner = Riot.findSummoner(summonerName);
-            System.Diagnostics.Debug.Write(summoner.id);
+            var riot = new Riot(Region.Type.na);
+            var summoner = riot.findSummoner(summonerName);
+            System.Diagnostics.Debug.WriteLine(summoner.id);
+
+            var game = riot.findCurrentGame(summoner);
+            System.Diagnostics.Debug.WriteLine(game.encryptionKey);
+
+            var replay = riot.findReplay(game);
+            System.Diagnostics.Debug.WriteLine(replay.metaData);
         }
     }
 }

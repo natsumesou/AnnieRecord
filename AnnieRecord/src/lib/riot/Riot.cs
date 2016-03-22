@@ -7,11 +7,27 @@ using RestSharp;
 
 namespace AnnieRecord
 {
-    class Riot
+    public class Riot
     {
-        public static Summoner findSummoner(String summonerName)
+        public Riot(Region.Type regionType)
+        {
+            var region = new Region(regionType);
+            API.Instance.buildClient(region);
+        }
+
+        public Summoner findSummoner(String summonerName)
         {
             return Summoner.find(summonerName);
+        }
+
+        public Game findCurrentGame(Summoner summoner)
+        {
+            return Game.find(summoner);
+        }
+
+        public Replay findReplay(Game game)
+        {
+            return Replay.find(game);
         }
     }
 }

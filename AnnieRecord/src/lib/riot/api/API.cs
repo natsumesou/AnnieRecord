@@ -11,23 +11,45 @@ namespace AnnieRecord
     {
         private static readonly Lazy<API> lazy = new Lazy<API>(() => new API());
 
-        public RestClient client {
+        public RestClient apiClient {
             get;
             private set;
         }
+
+        public RestClient spectateClient
+        {
+            get;
+            private set;
+        }
+
+        public Region region
+        {
+            get;
+            private set;
+        }
+
         private String apiKey
         {
             get { return "9655dc94-8557-43e7-9927-6606c68beb30"; }
         }
 
-        private API()
-        {
-            client = new RestClient("https://na.api.pvp.net/");
-        }
-
         public static API Instance
         {
             get { return lazy.Value;  }
+        }
+
+        public void buildClient(Region region)
+        {
+            this.region = region;
+            apiClient = new RestClient(String.Format("https://{0}.api.pvp.net/", this.region.type.ToString()));
+            if (region.type == Region.Type.jp)
+            {
+                spectateClient = new RestClient("http://http://104.160.154.200/");
+            }
+            else
+            {
+                spectateClient = new RestClient(String.Format("http://spectator.{0}.lol.riotgames.com/", this.region.type.ToString()));
+            }
         }
 
         public RestRequest buildRequest(String path, Method method = Method.GET)

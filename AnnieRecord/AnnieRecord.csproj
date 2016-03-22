@@ -65,10 +65,18 @@
     </ApplicationDefinition>
     <Compile Include="src\lib\riot\api\API.cs" />
     <Compile Include="src\lib\riot\api\BaseRepository.cs" />
+    <Compile Include="src\lib\riot\api\GameRepository.cs" />
+    <Compile Include="src\lib\riot\api\LastChunkInfoRepository.cs" />
+    <Compile Include="src\lib\riot\api\ReplayRepository.cs" />
     <Compile Include="src\lib\riot\api\SummonerRepository.cs" />
     <Compile Include="src\lib\riot\model\BaseModel.cs" />
+    <Compile Include="src\lib\riot\model\Game.cs" />
+    <Compile Include="src\lib\riot\model\LastChunkInfo.cs" />
+    <Compile Include="src\lib\riot\model\Region.cs" />
+    <Compile Include="src\lib\riot\model\Replay.cs" />
     <Compile Include="src\lib\riot\model\Summoner.cs" />
     <Compile Include="src\lib\riot\Riot.cs" />
+    <Compile Include="src\service\RecordService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -110,7 +118,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="src\server\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

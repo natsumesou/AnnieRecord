@@ -12,7 +12,7 @@ namespace AnnieRecord
             get;
             private set;
         }
-        public uint id
+        public long id
         {
             get;
             private set;

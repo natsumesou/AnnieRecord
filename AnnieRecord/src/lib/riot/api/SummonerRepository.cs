@@ -11,10 +11,11 @@ namespace AnnieRecord
     {
         public static Summoner find(String summonerName)
         {
-            var request = API.Instance.buildRequest("/api/lol/na/v1.4/summoner/by-name/{summonerName}");
+            var request = API.Instance.buildRequest("/api/lol/{region}/v1.4/summoner/by-name/{summonerName}");
             request.AddUrlSegment("summonerName", summonerName);
-            request.RootElement = summonerName;
-            var response = API.Instance.client.Execute<Summoner>(request);
+            request.AddUrlSegment("region", API.Instance.region.type.ToString());
+            request.RootElement = summonerName.ToLower().Replace(" ", String.Empty);
+            var response = API.Instance.apiClient.Execute<Summoner>(request);
             return response.Data;
         }
     }
