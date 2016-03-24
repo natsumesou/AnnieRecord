@@ -45,6 +45,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -70,12 +71,16 @@
     <Compile Include="src\lib\riot\api\ReplayRepository.cs" />
     <Compile Include="src\lib\riot\api\SummonerRepository.cs" />
     <Compile Include="src\lib\riot\model\BaseModel.cs" />
+    <Compile Include="src\lib\riot\model\Client.cs" />
     <Compile Include="src\lib\riot\model\Game.cs" />
     <Compile Include="src\lib\riot\model\LastChunkInfo.cs" />
     <Compile Include="src\lib\riot\model\Region.cs" />
     <Compile Include="src\lib\riot\model\Replay.cs" />
     <Compile Include="src\lib\riot\model\Summoner.cs" />
     <Compile Include="src\lib\riot\Riot.cs" />
+    <Compile Include="src\lib\RestSharp\RestSharpExtensions.cs" />
+    <Compile Include="src\lib\System\Extensions.cs" />
+    <Compile Include="src\server\Server.cs" />
     <Compile Include="src\service\RecordService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -118,9 +123,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\server\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

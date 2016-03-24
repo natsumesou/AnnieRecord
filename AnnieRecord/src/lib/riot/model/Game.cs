@@ -39,10 +39,10 @@ namespace AnnieRecord
             get;
             private set;
         }
-        public DateTime gameStartTime
+
+        public static Game fromLocalClient(long gameId, String key, String platform)
         {
-            get;
-            private set;
+            return new Game() { id = gameId, encryptionKey = key, platformId = platform };
         }
     }
 }

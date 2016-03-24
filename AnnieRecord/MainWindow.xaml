@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="アニーレコード" Height="350" Width="525">
     <Grid>
-        <TextBox Height="50" Margin="37,135,148,134" FontSize="35" Name="summonerNameTextBox"></TextBox>
-        <Button Margin="409,135,32,134" FontSize="20" Click="add_summoner">追加</Button>
+        <TextBox Margin="36,97,27,160" FontSize="35" Name="summonerNameTextBox"></TextBox>
+        <Button Margin="199,192,180,63" FontSize="20" Click="launch_replay">リプレイ起動</Button>
     </Grid>
 </Window>

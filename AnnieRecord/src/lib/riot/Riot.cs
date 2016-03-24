@@ -29,5 +29,15 @@ namespace AnnieRecord
         {
             return Replay.find(game);
         }
+        
+        public Replay findReplay(String filename)
+        {
+            return Replay.find(filename);
+        }
+
+        public LastChunkInfo findLastChunkInfo(Game game)
+        {
+            return LastChunkInfo.find(game);
+        }
     }
 }

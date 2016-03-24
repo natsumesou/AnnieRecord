@@ -66,5 +66,50 @@ namespace AnnieRecord
                     break;
             }
         }
+
+        public static Region fromPlatformString(String platformStr)
+        {
+            Type t;
+            switch (platformStr)
+            {
+                case "NA1":
+                    t = Type.na;
+                    break;
+                case "BR1":
+                    t = Type.br;
+                    break;
+                case "LA1":
+                    t = Type.lan;
+                    break;
+                case "LA2":
+                    t = Type.las;
+                    break;
+                case "OC1":
+                    t = Type.oce;
+                    break;
+                case "EUN1":
+                    t = Type.eune;
+                    break;
+                case "TR1":
+                    t = Type.tr;
+                    break;
+                case "RU":
+                    t = Type.ru;
+                    break;
+                case "EUW1":
+                    t = Type.euw;
+                    break;
+                case "KR":
+                    t = Type.kr;
+                    break;
+                case "JP1":
+                    t = Type.jp;
+                    break;
+                default:
+                    t = Type.na;
+                    break;
+            }
+            return new Region(t);
+        }
     }
 }

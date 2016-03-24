@@ -29,9 +29,9 @@ namespace AnnieRecord
             private set;
         }
 
-        public bool lastChunk()
+        public bool isLastChunk()
         {
-            return chunkId >= endGameChunkId;
+            return endGameChunkId != 0 && chunkId >= endGameChunkId;
         }
     }
 }

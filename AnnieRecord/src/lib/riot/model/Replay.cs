@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AnnieRecord
@@ -9,26 +12,45 @@ namespace AnnieRecord
     public partial class Replay : BaseModel
     {
         public long gameId;
-        public String version;
+        public Region region;
         public String encryptionKey;
-        public String metaData;
-        public DateTime gameStartTime;
-        public Dictionary<int, String> chunks;
-        public Dictionary<int, String> keyFrames;
+        public Dictionary<String, byte[]> data;
 
-        public Replay(long id, String versionStr, String encryptionKeyStr, String metaDataStr, DateTime startTime)
+        public String lastChunkPath;
+        public String lastkeyFramePath;
+
+        private static readonly String FILENAME_FORMAT = "replay_{0}_{1}.anr";
+
+        public String filename
         {
-            gameId = id;
-            version = versionStr;
-            encryptionKey = encryptionKeyStr;
-            metaData = metaDataStr;
-            gameStartTime = startTime;
+            get
+            {
+                return String.Format(FILENAME_FORMAT, gameId, region.platform);
+            }
         }
 
-        public String fileName()
+        public static String filenameFromGame(Game game)
         {
-            var time = gameStartTime.ToString("yyyyMMdd-HHmmss");
-            return String.Format("replay_{0}.anr", time);
+            return String.Format(FILENAME_FORMAT, game.id, game.platformId);
+        }
+
+        public Replay(long id, String encryptionKeyStr, Region reg)
+        {
+            gameId = id;
+            encryptionKey = encryptionKeyStr;
+            region = reg;
+            data = new Dictionary<string, byte[]>();
+        }
+
+        public void buildEncryptionKey(String key)
+        {
+            encryptionKey = key;
+        }
+
+        public byte[] getData(HttpListenerRequest request)
+        {
+            var key = String.Format("{0} {1}", request.HttpMethod, request.RawUrl);
+            return data[key];
         }
     }
 }

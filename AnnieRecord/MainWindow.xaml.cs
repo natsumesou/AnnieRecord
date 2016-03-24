@@ -23,20 +23,28 @@ namespace AnnieRecord
         public MainWindow()
         {
             InitializeComponent();
+            startWatch();
         }
 
-        private void add_summoner(object sender, RoutedEventArgs e)
+        private void startWatch()
         {
             var summonerName = summonerNameTextBox.Text;
-            var riot = new Riot(Region.Type.na);
+            var riot = new Riot(Region.Type.jp);
+
             var summoner = riot.findSummoner(summonerName);
             System.Diagnostics.Debug.WriteLine(summoner.id);
+            var record = new RecordService(riot, summoner);
+            record.watch();
+        }
 
-            var game = riot.findCurrentGame(summoner);
-            System.Diagnostics.Debug.WriteLine(game.encryptionKey);
-
-            var replay = riot.findReplay(game);
-            System.Diagnostics.Debug.WriteLine(replay.metaData);
+        private void launch_replay(object sender, RoutedEventArgs e)
+        {
+            var filename = summonerNameTextBox.Text;
+            var riot = new Riot(Region.Type.jp);
+            var replay = riot.findReplay(filename);
+            var server = new Server(replay);
+            server.run();
+            Client.LaunchReplay(replay);
         }
     }
 }

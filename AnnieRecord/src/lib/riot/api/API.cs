@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RestSharp;
+using RestSharp.Deserializers;
 
 namespace AnnieRecord
 {
@@ -42,9 +43,10 @@ namespace AnnieRecord
         {
             this.region = region;
             apiClient = new RestClient(String.Format("https://{0}.api.pvp.net/", this.region.type.ToString()));
+
             if (region.type == Region.Type.jp)
             {
-                spectateClient = new RestClient("http://http://104.160.154.200/");
+                spectateClient = new RestClient("http://104.160.154.200/");
             }
             else
             {
@@ -56,6 +58,7 @@ namespace AnnieRecord
         {
             var request = new RestRequest(path, method);
             request.AddParameter("api_key", apiKey);
+            request.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
             return request;
         }
     }
