@@ -76,6 +76,7 @@ namespace AnnieRecord
 
         private void startRecord(Replay replay)
         {
+            System.Diagnostics.Debug.WriteLine("start recording");
             int chunkId = 1;
             int keyFrameId = 1;
             while(true)
@@ -88,6 +89,8 @@ namespace AnnieRecord
                 if (lastChunkInfo.isLastChunk())
                 {
                     replay.writeLastChunkInfo();
+                    replay.close();
+                    System.Diagnostics.Debug.WriteLine("end recording");
                     break;
                 }
                 if (chunkId >= lastChunkInfo.chunkId)

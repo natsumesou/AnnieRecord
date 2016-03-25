@@ -7,12 +7,17 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using RestSharp;
 using System.Text.RegularExpressions;
+using Ionic.Zip;
+using Ionic.Crc;
 
 namespace AnnieRecord
 {
     public partial class Replay : BaseModel
     {
         private static readonly String REPLAY_DIR = System.Environment.CurrentDirectory + "\\replays";
+        private FileStream fileStream;
+        private ZipOutputStream zipStream;
+
         private List<String> keys = new List<string>();
 
         public static Replay find(Game game)
@@ -49,60 +54,43 @@ namespace AnnieRecord
                 platformId = m.Groups["platformId"].Value;
             }
             var replay = new Replay(long.Parse(gameId), "", Region.fromPlatformString(platformId));
-
-            List<byte[]> lineBytes = new List<byte[]>();
-            var bytes = File.ReadAllBytes(REPLAY_DIR + "\\" + filename);
-
-            int binaryIndex = 0;
-            for (var i = 0; i < bytes.Length; i++)
+            
+            using (var zip = ZipFile.Read(REPLAY_DIR + "\\" + filename))
             {
-                var b = bytes[i];
-                if (bytes[i] == (byte)'\n')
+                foreach (var e in zip)
                 {
-                    lineBytes.Add(bytes.Skip(binaryIndex).Take(i - binaryIndex).ToArray());
-                    binaryIndex = i + 1;
-                }
-            }
-
-            var key = "";
-            byte[] body = new byte[0];
-            for (var i = 0; i < lineBytes.Count; i++)
-            {
-                var lineStr = Encoding.ASCII.GetString(lineBytes[i]);
-                if (i == 0)
-                {
-                    replay.buildEncryptionKey(lineStr);
-                }
-                if (lineStr.IndexOf("GET ") >= 0)
-                {
-                    if (key.Length > 0 && body.Length > 0)
+                    using (CrcCalculatorStream ccs = e.OpenReader())
                     {
-                        replay.data.Add(key, body);
-                        if(key.IndexOf("getGameDataChunk") >= 0)
+                        using (var ms = new MemoryStream())
                         {
-                            replay.lastChunkPath = key;
-                        }
-                        if (key.IndexOf("getKeyFrame") >= 0)
-                        {
-                            replay.lastkeyFramePath = key;
+                            ccs.CopyTo(ms);
+                            if (e.FileName.Contains("metadata"))
+                            {
+                                replay.encryptionKey = Encoding.ASCII.GetString(ms.ToArray());
+                            }
+                            else if(e.FileName.Contains("version"))
+                            {
+                                replay.version = ms.ToArray();
+                            }
+                            else if(e.FileName.Contains("getGameMetaData"))
+                            {
+                                replay.metadata = ms.ToArray();
+                            }
+                            else if(e.FileName.Contains("getGameDataChunk"))
+                            {
+                                replay.chunks.Add(e.FileName, ms.ToArray());
+                            }
+                            else if (e.FileName.Contains("getKeyFrame"))
+                            {
+                                replay.keyFrames.Add(e.FileName, ms.ToArray());
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine("what is this?: " + e.FileName);
+                            }
                         }
                     }
-                    key = lineStr.Replace("\r", String.Empty);
-                    body = new byte[0];
-                } else
-                {
-                    body = merge(body, lineBytes[i]);
-                    body = merge(body, new byte[] { (byte)'\n' });
                 }
-            }
-            replay.data.Add(key, body);
-            if (key.IndexOf("getGameDataChunk") >= 0)
-            {
-                replay.lastChunkPath = key;
-            }
-            if (key.IndexOf("getKeyFrame") >= 0)
-            {
-                replay.lastkeyFramePath = key;
             }
 
             return replay;
@@ -133,7 +121,7 @@ namespace AnnieRecord
             request.AddUrlSegment("chunkId", chunkId.ToString());
 
             var response = API.Instance.spectateClient.Execute(request);
-            write(response, true);
+            write(response);
         }
 
         public void writeKeyFrame(int keyFrameId)
@@ -144,44 +132,37 @@ namespace AnnieRecord
             request.AddUrlSegment("keyFrameId", keyFrameId.ToString());
 
             var response = API.Instance.spectateClient.Execute(request);
-            write(response, true);
+            write(response);
         }
 
         private void writeMetaData()
         {
             createDirectoryIfNotExist();
-            using (StreamWriter outputFile = new StreamWriter(REPLAY_DIR + "\\" + filename))
-            {
-                outputFile.WriteLine(encryptionKey);
-            }
+            fileStream = new FileStream(REPLAY_DIR + "\\" + filename, FileMode.Create);
+            zipStream = new ZipOutputStream(fileStream);
+            zipStream.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
+            zipStream.PutNextEntry("metadata");
+            byte[] buffer = Encoding.ASCII.GetBytes(encryptionKey);
+            zipStream.Write(buffer, 0, buffer.Length);
         }
 
-        private void write(IRestResponse response, bool isBinary = false)
+        private void write(IRestResponse response)
         {
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 return;
             if (keys.Contains(response.toSerializableString()))
                 return;
-            using (StreamWriter outputFile = new StreamWriter(REPLAY_DIR + "\\" + filename, true))
-            {
-                outputFile.WriteLine(response.toSerializableString());
-            }
-            using (StreamWriter outputFile = new StreamWriter(REPLAY_DIR + "\\" + filename, true))
-            {
-                if (isBinary)
-                {
-                    outputFile.BaseStream.Flush();
-                    outputFile.BaseStream.Write(response.RawBytes, 0, response.RawBytes.Length);
-                    byte[] newline = new byte[] { (byte)'\n' };
-                    outputFile.BaseStream.Write(newline, 0, newline.Length);
-                }
-                else
-                {
-                    outputFile.WriteLine(response.Content);
-                }
-            }
-            keys.Add(response.toSerializableString());
+            zipStream.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
+            zipStream.PutNextEntry(response.toSerializableString());
+            zipStream.Write(response.RawBytes, 0, response.RawBytes.Length);
 
+            keys.Add(response.toSerializableString());
+        }
+
+        public void close()
+        {
+            zipStream.Close();
+            fileStream.Close();
         }
 
         private void createDirectoryIfNotExist()

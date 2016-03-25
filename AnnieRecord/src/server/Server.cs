@@ -49,41 +49,48 @@ namespace AnnieRecord
 
                     // ここのコードはanrファイルを再生成するといらなくなるはず？
                     //getGameMetaDataの{gameId}/1/tokenの1が謎の数字になるときがあるのでそこだけ対応必要かも？
-                    if (context.Request.RawUrl.IndexOf("getGameMetaData") >= 0)
-                    {
-                        buffer = replay.data["GET /observer-mode/rest/consumer/getGameMetaData/JP1/116763611/1/token"];
-                    }
-                    else if (context.Request.RawUrl.IndexOf("getLastChunkInfo") >= 0)
-                    {
-                        buffer = Encoding.ASCII.GetBytes("{\"chunkId\":9,\"availableSince\":9198,\"nextAvailableChunk\":0,\"keyFrameId\":2,\"nextChunkId\":9,\"endStartupChunkId\":2,\"startGameChunkId\":2,\"endGameChunkId\":9,\"duration\":30000}");
-                        //{"chunkId":80,"availableSince":31079,"nextAvailableChunk":0,"keyFrameId":39,"nextChunkId":80,"endStartupChunkId":2,"startGameChunkId":4,"endGameChunkId":80,"duration":13419}
-                    }
-                    else
-                    {
-                        buffer = replay.getData(context.Request);
-                    }
-
                     if (context.Request.RawUrl.IndexOf("version") >= 0)
                     {
                         response.AddHeader("Content-Type", "text/plain");
+                        buffer = replay.version;
                     }
                     else if (context.Request.RawUrl.IndexOf("getGameMetaData") >= 0)
                     {
                         response.AddHeader("Content-Type", "application/json");
+                        buffer = replay.metadata;
+                    }
+                    else if (context.Request.RawUrl.IndexOf("getLastChunkInfo") >= 0)
+                    {
+                        buffer = replay.getLastChunkInfo();
+                        //"{\"chunkId\":79,\"availableSince\":9198,\"nextAvailableChunk\":0,\"keyFrameId\":37,\"nextChunkId\":79,\"endStartupChunkId\":2,\"startGameChunkId\":2,\"endGameChunkId\":79,\"duration\":30000}"
+                        //buffer = replay.data["GET /observer-mode/rest/consumer/getLastChunkInfo/JP1/" + replay.gameId + "/1/token"];
+                    }
+                    else if (context.Request.RawUrl.IndexOf("getGameDataChunk") >= 0)
+                    {
+                        response.AddHeader("Content-Type", "application/octet-stream");
+                        buffer = replay.getChunk(context.Request);
+                    }
+                    else if(context.Request.RawUrl.IndexOf("getKeyFrame") >= 0)
+                    {
+                        response.AddHeader("Content-Type", "application/octet-stream");
+                        buffer = replay.getKeyFrame(context.Request);
                     }
                     else
                     {
-                        response.AddHeader("Content-Type", "application/octet-stream");
+                        System.Diagnostics.Debug.WriteLine("dont know: " + context.Request.RawUrl);
+
+                        buffer = Encoding.ASCII.GetBytes("404");
+                        response.StatusCode = (int)HttpStatusCode.NotFound;
                     }
 
                     var reqStr = context.Request.toSerializableString();
-                    if (reqStr.Equals(replay.lastChunkPath))
-                        isLastChunkReqeust = true;
-                    if (context.Request.toSerializableString().Equals(replay.lastkeyFramePath))
-                        isLastKeyFrameReqauest = true;
+                    isLastChunkReqeust = replay.isLastChunk(reqStr);
+                    isLastKeyFrameReqauest = replay.isLastKeyFrame(reqStr);
                 }
                 catch (KeyNotFoundException)
                 {
+                    System.Diagnostics.Debug.WriteLine("dont know: " + context.Request.RawUrl);
+
                     buffer = Encoding.ASCII.GetBytes("404");
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                 }
@@ -95,7 +102,10 @@ namespace AnnieRecord
                 output.Close();
 
                 if (isLastKeyFrameReqauest && isLastChunkReqeust)
+                {
+                    System.Diagnostics.Debug.WriteLine("exit api server");
                     break;
+                }
             }
         }
     }

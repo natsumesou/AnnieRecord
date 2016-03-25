@@ -10,6 +10,7 @@ namespace AnnieRecord
 {
     public class Client
     {
+        public static readonly String MOCK_CLIENT_NAME = "League of Legends.exe";
         public static readonly String CLIENT_NAME = "League of Legends real.exe";
         private static readonly String TEMP_FILE_NAME = "AnnieRecord_currentGameInfo.txt";
         private static readonly String defaultDir = @"C:\Riot Games\League of Legends\RADS\solutions\lol_game_client_sln\releases\";
@@ -68,7 +69,7 @@ namespace AnnieRecord
 
             var processInfo = new ProcessStartInfo();
             processInfo.WorkingDirectory = clientDir;
-            processInfo.FileName = CLIENT_NAME;
+            processInfo.FileName = MOCK_CLIENT_NAME;
             processInfo.Arguments = arguments;
             Process p = Process.Start(processInfo);
         }
