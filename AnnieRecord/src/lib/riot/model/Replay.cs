@@ -45,6 +45,14 @@ namespace AnnieRecord.riot.model
             get { return keyFrames.Last().Key; }
         }
 
+        private bool isFirstKeyFrameRecored
+        {
+            get
+            {
+                return keyFrames.First().Key == 1;
+            }
+        }
+
         GameMetaData _metaData;
         private GameMetaData metaData
         {
@@ -98,18 +106,16 @@ namespace AnnieRecord.riot.model
             {
                 nextInterval = CHUNK_INTERVAL;
             }
-            if (keyFrameIndex == 0)
-            {
-                //keyFrameIndex = keyFrameIndex + 1;
-            }
             if (chunkIndex >= chunks.Count - 1)
             {
                 nextInterval = 0;
-                keyFrameIndex = keyFrames.Count - 1;
             }
-
             var chunkId = chunks.Skip(chunkIndex).First().Key;
             var keyFrameId = keyFrames.Skip(keyFrameIndex).First().Key;
+            if (isFirstKeyFrameRecored)
+            {
+                keyFrameId = keyFrameId - 1;
+            }
             int nextChunkId;
             if (chunkIndex >= chunks.Count - 1)
             {
@@ -130,8 +136,10 @@ namespace AnnieRecord.riot.model
                 );
             if (chunkIndex < chunks.Count - 1)
                 chunkIndex = chunkIndex + 1;
-            if (chunkIndex % 2 == 1 && keyFrameIndex < keyFrames.Count - 1)
+            if (chunkIndex % 2 == 0 && chunkIndex > 0 && keyFrameIndex < keyFrames.Count - 1)
                 keyFrameIndex = keyFrameIndex + 1;
+            if (keyFrameIndex >= keyFrames.Count -1)
+                keyFrameIndex = keyFrames.Count - 1;
             return Encoding.ASCII.GetBytes(lastChunkInfo);
         }
 
