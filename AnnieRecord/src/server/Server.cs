@@ -68,20 +68,18 @@ namespace AnnieRecord
                     {
                         response.AddHeader("Content-Type", "application/octet-stream");
                         buffer = replay.getChunk(context.Request);
+                        isLastChunkReqeust = replay.isLastChunk(context.Request);
                     }
                     else if(context.Request.RawUrl.Contains(SPECTATE_METHOD.getKeyFrame.ToString()))
                     {
                         response.AddHeader("Content-Type", "application/octet-stream");
                         buffer = replay.getKeyFrame(context.Request);
+                        isLastKeyFrameReqauest = replay.isLastKeyFrame(context.Request);
                     }
                     else
                     {
                         throw new KeyNotFoundException();
                     }
-
-                    var reqStr = context.Request.toSerializableString();
-                    isLastChunkReqeust = replay.isLastChunk(reqStr);
-                    isLastKeyFrameReqauest = replay.isLastKeyFrame(reqStr);
                 }
                 catch (KeyNotFoundException)
                 {

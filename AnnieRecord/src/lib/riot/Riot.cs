@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Deserializers;
 using AnnieRecord.riot.model;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace AnnieRecord.riot
 {
@@ -51,6 +53,8 @@ namespace AnnieRecord.riot
         {
             get { return lazy.Value;  }
         }
+
+        private static readonly String RESOURCE_PATTERN = @".*/(.*)/(.*)/(?<id>[0-9]+)/token$";
 
         private static readonly Lazy<Riot> lazy = new Lazy<Riot>(() => new Riot());
 
@@ -103,6 +107,16 @@ namespace AnnieRecord.riot
             request.AddUrlSegment("gameId", gameId.ToString());
 
             return request;
+        }
+
+        internal static int getResourceIdByPath(String path)
+        {
+            int id = 0;
+            foreach (Match m in Regex.Matches(path, RESOURCE_PATTERN))
+            {
+                id = Int32.Parse(m.Groups["id"].Value);
+            }
+            return id;
         }
     }
 }

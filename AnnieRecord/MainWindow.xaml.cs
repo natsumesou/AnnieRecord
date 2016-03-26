@@ -43,8 +43,10 @@ namespace AnnieRecord
         {
             var filename = summonerNameTextBox.Text;
             var replay = Replay.find(filename);
+
             var server = new Server(replay);
             server.run();
+
             GameClient.LaunchReplay(replay);
         }
     }

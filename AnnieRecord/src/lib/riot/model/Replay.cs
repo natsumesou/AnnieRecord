@@ -19,84 +19,30 @@ namespace AnnieRecord.riot.model
         public byte[] version;
         public int chunkIndex;
         public int keyFrameIndex;
-        public Dictionary<String, byte[]> chunks;
-        public Dictionary<String, byte[]> keyFrames;
+        public SortedDictionary<int, byte[]> chunks;
+        public SortedDictionary<int, byte[]> keyFrames;
 
-        private readonly String CHUNK_PATTERN = @"GET /observer-mode/rest/consumer/getGameDataChunk/(.*)/(.*)/(?<id>[0-9]+)/token";
-        private readonly String KEYFRAME_PATTERN = @"GET /observer-mode/rest/consumer/getKeyFrame/(.*)/(.*)/(?<id>[0-9]+)/token";
-        private readonly int FIRST_CHUNK_INTERVAL = 30000;
+        private readonly int FIRST_SEVERAL_CHUNK_INTERVAL = 30000;
         private readonly int CHUNK_INTERVAL = 500;
+        private readonly int SEVERAL_COUNT = 2;
 
-        private int _firstChunkId = 0;
         public int firstChunkId
         {
-            get
-            {
-                if(_firstChunkId == 0)
-                {
-                    var ids = initializeListData(chunks, CHUNK_PATTERN);
-                    _firstChunkId = ids[0];
-                    _lastChunkId = ids[1];
-                }
-                return _firstChunkId;
-            }
+            get { return chunks.First().Key; }
         }
-        private int _lastChunkId = 0;
         public int lastChunkId
         {
-            get
-            {
-                if(_lastChunkId == 0)
-                {
-                    var ids = initializeListData(chunks, CHUNK_PATTERN);
-                    _firstChunkId = ids[0];
-                    _lastChunkId = ids[1];
-                }
-                return _lastChunkId;
-            }
+            get { return chunks.Last().Key; }
         }
 
-        private int _firstKeyFrameId = 0;
         public int firstKeyFrameId
         {
-            get
-            {
-                if(_firstKeyFrameId == 0)
-                {
-                    var ids = initializeListData(keyFrames, KEYFRAME_PATTERN);
-                    _firstKeyFrameId = ids[0];
-                    _lastKeyFrameId = ids[1];
-                }
-                return _firstKeyFrameId;
-            }
+            get { return keyFrames.First().Key;  }
         }
 
-        private int _firstValidKeyFrameId = 0;
-        public int firstValidKeyFrameId
-        {
-            get
-            {
-                if(_firstValidKeyFrameId == 0)
-                {
-                    _firstValidKeyFrameId = firstKeyFrameId + 1;
-                }
-                return _firstValidKeyFrameId;
-            }
-        }
-
-        private int _lastKeyFrameId = 0;
         public int lastKeyFrameId
         {
-            get
-            {
-                if(_lastKeyFrameId == 0)
-                {
-                    var ids = initializeListData(keyFrames, KEYFRAME_PATTERN);
-                    _firstKeyFrameId = ids[0];
-                    _lastKeyFrameId = ids[1];
-                }
-                return _lastKeyFrameId;
-            }
+            get { return keyFrames.Last().Key; }
         }
 
         GameMetaData _metaData;
@@ -133,8 +79,8 @@ namespace AnnieRecord.riot.model
             gameId = id;
             encryptionKey = encryptionKeyStr;
             region = reg;
-            chunks = new Dictionary<string, byte[]>();
-            keyFrames = new Dictionary<string, byte[]>();
+            chunks = new SortedDictionary<int, byte[]>();
+            keyFrames = new SortedDictionary<int, byte[]>();
         }
 
         public void buildEncryptionKey(String key)
@@ -145,102 +91,72 @@ namespace AnnieRecord.riot.model
         public byte[] getLastChunkInfo()
         {
             int nextInterval;
-            if(chunkIndex == 0)
+            if(chunkIndex < SEVERAL_COUNT)
             {
-                nextInterval = FIRST_CHUNK_INTERVAL;
+                nextInterval = FIRST_SEVERAL_CHUNK_INTERVAL;
             } else
             {
                 nextInterval = CHUNK_INTERVAL;
             }
-            if (chunkIndex == 0)
-            {
-                chunkIndex = firstChunkId;
-            }
             if (keyFrameIndex == 0)
             {
-                keyFrameIndex = firstValidKeyFrameId;
+                //keyFrameIndex = keyFrameIndex + 1;
             }
-            if (chunkIndex == lastChunkId)
+            if (chunkIndex >= chunks.Count - 1)
             {
                 nextInterval = 0;
-                keyFrameIndex = lastKeyFrameId;
+                keyFrameIndex = keyFrames.Count - 1;
+            }
+
+            var chunkId = chunks.Skip(chunkIndex).First().Key;
+            var keyFrameId = keyFrames.Skip(keyFrameIndex).First().Key;
+            int nextChunkId;
+            if (chunkIndex >= chunks.Count - 1)
+            {
+                nextChunkId = chunks.Skip(chunkIndex).First().Key;
+            } else
+            {
+                nextChunkId = chunks.Skip(chunkIndex + 1).First().Key;
             }
 
             var lastChunkInfo = String.Format("{{\"chunkId\":{0},\"availableSince\":30000,\"nextAvailableChunk\":{1},\"keyFrameId\":{2},\"nextChunkId\":{3},\"endStartupChunkId\":{4},\"startGameChunkId\":{5},\"endGameChunkId\":{6},\"duration\":30000}}",
-                chunkIndex,
+                chunkId,
                 nextInterval,
-                keyFrameIndex,
-                chunkIndex + 1,
+                keyFrameId,
+                nextChunkId,
                 metaData.endStartupChunkId,
                 metaData.startGameChunkId,
                 lastChunkId
                 );
-            if (chunkIndex < lastChunkId)
+            if (chunkIndex < chunks.Count - 1)
                 chunkIndex = chunkIndex + 1;
-            if (keyFrameIndex < lastKeyFrameId)
-            {
-                keyFrameIndex = (int)Math.Floor((double)(chunkIndex / 2));
-                if (keyFrameIndex < firstKeyFrameId)
-                    keyFrameIndex = firstValidKeyFrameId;
-            }
-            else
-            {
-                keyFrameIndex = lastKeyFrameId;
-            }
+            if (chunkIndex % 2 == 1 && keyFrameIndex < keyFrames.Count - 1)
+                keyFrameIndex = keyFrameIndex + 1;
             return Encoding.ASCII.GetBytes(lastChunkInfo);
         }
 
         public byte[] getChunk(HttpListenerRequest request)
         {
-            return chunks[request.toSerializableString()];
+            var id = Riot.getResourceIdByPath(request.toSerializableString());
+            return chunks[id];
         }
 
         public byte[] getKeyFrame(HttpListenerRequest request)
         {
-            return keyFrames[request.toSerializableString()];
+            var id = Riot.getResourceIdByPath(request.toSerializableString());
+            return keyFrames[id];
         }
 
-        public bool isLastChunk(String key)
+        public bool isLastChunk(HttpListenerRequest request)
         {
-            int id = 0;
-            foreach (Match m in Regex.Matches(key, CHUNK_PATTERN))
-            {
-                id = Int32.Parse(m.Groups["id"].Value);
-            }
+            var id = Riot.getResourceIdByPath(request.toSerializableString());
             return id == lastChunkId;
         }
 
-        public bool isLastKeyFrame(String key)
+        public bool isLastKeyFrame(HttpListenerRequest request)
         {
-            int id = 0;
-            foreach (Match m in Regex.Matches(key, KEYFRAME_PATTERN))
-            {
-                id = Int32.Parse(m.Groups["id"].Value);
-            }
+            var id = Riot.getResourceIdByPath(request.toSerializableString());
             return id == lastKeyFrameId;
-        }
-
-        private int[] initializeListData(Dictionary<String, byte[]> list, String pattern)
-        {
-            int maxId = 0;
-            int minId = 10000;
-            foreach (var entry in list)
-            {
-                int id = 0;
-                foreach (Match m in Regex.Matches(entry.Key, pattern))
-                {
-                    id = Int32.Parse(m.Groups["id"].Value);
-                    if (id > maxId)
-                    {
-                        maxId = id;
-                    }
-                    if (id < minId && id > 1)
-                    {
-                        minId = id;
-                    }
-                }
-            }
-            return new int[2] { minId, maxId };
         }
     }
 }

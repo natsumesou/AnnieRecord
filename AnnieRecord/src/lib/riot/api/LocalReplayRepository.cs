@@ -86,11 +86,11 @@ namespace AnnieRecord.riot.model
             }
             else if (filename.Contains(SPECTATE_METHOD.getGameDataChunk.ToString()))
             {
-                replay.chunks.Add(filename, bytes);
+                replay.chunks.Add(Riot.getResourceIdByPath(filename), bytes);
             }
             else if (filename.Contains(SPECTATE_METHOD.getKeyFrame.ToString()))
             {
-                replay.keyFrames.Add(filename, bytes);
+                replay.keyFrames.Add(Riot.getResourceIdByPath(filename), bytes);
             }
             else
             {
