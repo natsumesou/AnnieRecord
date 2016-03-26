@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AnnieRecord.src.lib.riot.model
+namespace AnnieRecord.riot.model
 {
-    class BaseModel
+    public partial class BaseModel
     {
         public BaseModel() { }
     }

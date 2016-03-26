@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AnnieRecord
+namespace AnnieRecord.riot.model
 {
-    public class Client
+    public class GameClient
     {
         public static readonly String MOCK_CLIENT_NAME = "League of Legends.exe";
-        public static readonly String CLIENT_NAME = "League of Legends real.exe";
+        public static readonly String CLIENT_NAME = "League of Legends.exe";
         private static readonly String TEMP_FILE_NAME = "AnnieRecord_currentGameInfo.txt";
         private static readonly String defaultDir = @"C:\Riot Games\League of Legends\RADS\solutions\lol_game_client_sln\releases\";
         private static String _clientDir;
@@ -38,7 +38,7 @@ namespace AnnieRecord
             }
         }
 
-        public static Game createGameFromClientInfo()
+        public static Game createGameFromClientInfo(Region region)
         {
             string gameId = "";
             string encryptionKey = "";
@@ -50,9 +50,17 @@ namespace AnnieRecord
                     if(sr.EndOfStream)
                     {
                         var split = line.Split(null);
-                        gameId = split[split.Length - 2];
-                        encryptionKey = split[split.Length - 3];
-                        platformId = split[split.Length - 1];
+                        if (split[0].Equals("spectator"))
+                        {
+                            gameId = split[split.Length - 2];
+                            encryptionKey = split[split.Length - 3];
+                            platformId = split[split.Length - 1];
+                        } else
+                        {
+                            gameId = split[split.Length - 1];
+                            encryptionKey = split[split.Length - 2];
+                            platformId = region.platform.ToString();
+                        }
                     }
                 }
             }

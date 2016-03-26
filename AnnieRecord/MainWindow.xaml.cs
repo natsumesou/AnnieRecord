@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AnnieRecord.riot;
+using AnnieRecord.riot.model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,22 +31,21 @@ namespace AnnieRecord
         private void startWatch()
         {
             var summonerName = summonerNameTextBox.Text;
-            var riot = new Riot(Region.Type.jp);
+            Riot.Instance.buildClient(new Region(Region.Type.jp));
 
-            var summoner = riot.findSummoner(summonerName);
+            var summoner = Summoner.find(summonerName);
             System.Diagnostics.Debug.WriteLine(summoner.id);
-            var record = new RecordService(riot, summoner);
+            var record = new RecordService(summoner);
             record.watch();
         }
 
         private void launch_replay(object sender, RoutedEventArgs e)
         {
             var filename = summonerNameTextBox.Text;
-            var riot = new Riot(Region.Type.jp);
-            var replay = riot.findReplay(filename);
+            var replay = Replay.find(filename);
             var server = new Server(replay);
             server.run();
-            Client.LaunchReplay(replay);
+            GameClient.LaunchReplay(replay);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace AnnieRecord
+namespace AnnieRecord.riot.model
 {
     public partial class Replay : BaseModel
     {
@@ -24,7 +24,8 @@ namespace AnnieRecord
 
         private readonly String CHUNK_PATTERN = @"GET /observer-mode/rest/consumer/getGameDataChunk/(.*)/(.*)/(?<id>[0-9]+)/token";
         private readonly String KEYFRAME_PATTERN = @"GET /observer-mode/rest/consumer/getKeyFrame/(.*)/(.*)/(?<id>[0-9]+)/token";
-
+        private readonly int FIRST_CHUNK_INTERVAL = 30000;
+        private readonly int CHUNK_INTERVAL = 500;
 
         private int _firstChunkId = 0;
         public int firstChunkId
@@ -67,6 +68,19 @@ namespace AnnieRecord
                     _lastKeyFrameId = ids[1];
                 }
                 return _firstKeyFrameId;
+            }
+        }
+
+        private int _firstValidKeyFrameId = 0;
+        public int firstValidKeyFrameId
+        {
+            get
+            {
+                if(_firstValidKeyFrameId == 0)
+                {
+                    _firstValidKeyFrameId = firstKeyFrameId + 1;
+                }
+                return _firstValidKeyFrameId;
             }
         }
 
@@ -130,14 +144,21 @@ namespace AnnieRecord
 
         public byte[] getLastChunkInfo()
         {
-            var nextInterval = 30000;
+            int nextInterval;
+            if(chunkIndex == 0)
+            {
+                nextInterval = FIRST_CHUNK_INTERVAL;
+            } else
+            {
+                nextInterval = CHUNK_INTERVAL;
+            }
             if (chunkIndex == 0)
             {
                 chunkIndex = firstChunkId;
             }
             if (keyFrameIndex == 0)
             {
-                keyFrameIndex = firstKeyFrameId;
+                keyFrameIndex = firstValidKeyFrameId;
             }
             if (chunkIndex == lastChunkId)
             {
@@ -160,7 +181,7 @@ namespace AnnieRecord
             {
                 keyFrameIndex = (int)Math.Floor((double)(chunkIndex / 2));
                 if (keyFrameIndex < firstKeyFrameId)
-                    keyFrameIndex = firstKeyFrameId;
+                    keyFrameIndex = firstValidKeyFrameId;
             }
             else
             {

@@ -68,21 +68,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="src\lib\riot\api\API.cs" />
-    <Compile Include="src\lib\riot\api\BaseRepository.cs" />
+    <Compile Include="src\lib\riot\api\LocalReplayRepository.cs" />
+    <Compile Include="src\lib\riot\Riot.cs" />
     <Compile Include="src\lib\riot\api\GameRepository.cs" />
     <Compile Include="src\lib\riot\api\LastChunkInfoRepository.cs" />
     <Compile Include="src\lib\riot\api\ReplayRepository.cs" />
     <Compile Include="src\lib\riot\api\SummonerRepository.cs" />
     <Compile Include="src\lib\riot\model\BaseModel.cs" />
-    <Compile Include="src\lib\riot\model\Client.cs" />
+    <Compile Include="src\lib\riot\model\GameClient.cs" />
     <Compile Include="src\lib\riot\model\Game.cs" />
     <Compile Include="src\lib\riot\model\GameMetaData.cs" />
     <Compile Include="src\lib\riot\model\LastChunkInfo.cs" />
     <Compile Include="src\lib\riot\model\Region.cs" />
     <Compile Include="src\lib\riot\model\Replay.cs" />
     <Compile Include="src\lib\riot\model\Summoner.cs" />
-    <Compile Include="src\lib\riot\Riot.cs" />
     <Compile Include="src\lib\RestSharp\RestSharpExtensions.cs" />
     <Compile Include="src\lib\System\Extensions.cs" />
     <Compile Include="src\server\Server.cs" />

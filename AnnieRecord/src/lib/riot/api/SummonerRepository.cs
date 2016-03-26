@@ -5,17 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using RestSharp;
 
-namespace AnnieRecord
+namespace AnnieRecord.riot.model
 {
-    public partial class Summoner : BaseModel
+    public partial class Summoner
     {
         public static Summoner find(String summonerName)
         {
-            var request = API.Instance.buildRequest("/api/lol/{region}/v1.4/summoner/by-name/{summonerName}");
+            var request = Riot.Instance.buildRequest("/api/lol/{region}/v1.4/summoner/by-name/{summonerName}");
             request.AddUrlSegment("summonerName", summonerName);
-            request.AddUrlSegment("region", API.Instance.region.type.ToString());
+            request.AddUrlSegment("region", Riot.Instance.region.type.ToString());
             request.RootElement = summonerName.ToLower().Replace(" ", String.Empty);
-            var response = API.Instance.apiClient.Execute<Summoner>(request);
+            var response = Riot.Instance.apiClient.Execute<Summoner>(request);
             return response.Data;
         }
     }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using AnnieRecord.riot;
+using AnnieRecord.riot.model;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -47,40 +50,33 @@ namespace AnnieRecord
                 {
                     System.Diagnostics.Debug.WriteLine(context.Request.Url.AbsoluteUri);
 
-                    // ここのコードはanrファイルを再生成するといらなくなるはず？
-                    //getGameMetaDataの{gameId}/1/tokenの1が謎の数字になるときがあるのでそこだけ対応必要かも？
-                    if (context.Request.RawUrl.IndexOf("version") >= 0)
+                    if (context.Request.RawUrl.Contains(SPECTATE_METHOD.version.ToString()))
                     {
                         response.AddHeader("Content-Type", "text/plain");
                         buffer = replay.version;
                     }
-                    else if (context.Request.RawUrl.IndexOf("getGameMetaData") >= 0)
+                    else if (context.Request.RawUrl.Contains(SPECTATE_METHOD.getGameMetaData.ToString()))
                     {
                         response.AddHeader("Content-Type", "application/json");
                         buffer = replay.metadata;
                     }
-                    else if (context.Request.RawUrl.IndexOf("getLastChunkInfo") >= 0)
+                    else if (context.Request.RawUrl.Contains(SPECTATE_METHOD.getLastChunkInfo.ToString()))
                     {
                         buffer = replay.getLastChunkInfo();
-                        //"{\"chunkId\":79,\"availableSince\":9198,\"nextAvailableChunk\":0,\"keyFrameId\":37,\"nextChunkId\":79,\"endStartupChunkId\":2,\"startGameChunkId\":2,\"endGameChunkId\":79,\"duration\":30000}"
-                        //buffer = replay.data["GET /observer-mode/rest/consumer/getLastChunkInfo/JP1/" + replay.gameId + "/1/token"];
                     }
-                    else if (context.Request.RawUrl.IndexOf("getGameDataChunk") >= 0)
+                    else if (context.Request.RawUrl.Contains(SPECTATE_METHOD.getGameDataChunk.ToString()))
                     {
                         response.AddHeader("Content-Type", "application/octet-stream");
                         buffer = replay.getChunk(context.Request);
                     }
-                    else if(context.Request.RawUrl.IndexOf("getKeyFrame") >= 0)
+                    else if(context.Request.RawUrl.Contains(SPECTATE_METHOD.getKeyFrame.ToString()))
                     {
                         response.AddHeader("Content-Type", "application/octet-stream");
                         buffer = replay.getKeyFrame(context.Request);
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("dont know: " + context.Request.RawUrl);
-
-                        buffer = Encoding.ASCII.GetBytes("404");
-                        response.StatusCode = (int)HttpStatusCode.NotFound;
+                        throw new KeyNotFoundException();
                     }
 
                     var reqStr = context.Request.toSerializableString();
@@ -91,6 +87,7 @@ namespace AnnieRecord
                 {
                     System.Diagnostics.Debug.WriteLine("dont know: " + context.Request.RawUrl);
 
+                    response.AddHeader("Content-Type", "text/plain");
                     buffer = Encoding.ASCII.GetBytes("404");
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                 }

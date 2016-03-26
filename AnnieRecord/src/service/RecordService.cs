@@ -5,19 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Management;
 using System.Threading;
+using AnnieRecord.riot;
+using AnnieRecord.riot.model;
 
 namespace AnnieRecord
 {
     public class RecordService
     {
-        private Riot riot;
         private Summoner summoner;
         private Game game;
         private Thread thread;
 
-        public RecordService(Riot r, Summoner s)
+        public RecordService(Summoner s)
         {
-            this.riot = r;
             this.summoner = s;
         }
 
@@ -34,24 +34,23 @@ namespace AnnieRecord
 
         private void startWatch_EventArrived(object sender, EventArrivedEventArgs e)
         {
-            if (!e.NewEvent.Properties["ProcessName"].Value.Equals(Client.CLIENT_NAME))
+            if (!e.NewEvent.Properties["ProcessName"].Value.Equals(GameClient.CLIENT_NAME))
                 return;
             findAndPrepareGameInfoFromLocal();
         }
 
         private void stopWatch_EventArrived(object sender, EventArrivedEventArgs e)
         {
-            if (!e.NewEvent.Properties["ProcessName"].Value.Equals(Client.CLIENT_NAME))
+            if (!e.NewEvent.Properties["ProcessName"].Value.Equals(GameClient.CLIENT_NAME))
                 return;
         }
 
         private void findAndPrepareGameInfoFromLocal()
         {
-            game = Client.createGameFromClientInfo();
+            game = GameClient.createGameFromClientInfo(Riot.Instance.region);
             if (Replay.isExist(game))
                 return;
-            var replay = riot.findReplay(game);
-            var lastChunkInfo = riot.findLastChunkInfo(game);
+            var replay = Replay.create(game);
 
             thread = new Thread(() => startRecord(replay));
             thread.IsBackground = true;
@@ -60,14 +59,10 @@ namespace AnnieRecord
 
         private void findAndPrepareGameInfo()
         {
-            game = riot.findCurrentGame(summoner);
+            game = Game.findCurrent(summoner);
             System.Diagnostics.Debug.WriteLine(game.encryptionKey);
 
-            var replay = riot.findReplay(game);
-            System.Diagnostics.Debug.WriteLine(replay.gameId);
-
-            var lastChunkInfo =riot.findLastChunkInfo(game);
-            System.Diagnostics.Debug.WriteLine(lastChunkInfo.chunkId);
+            var replay = Replay.create(game);
 
             thread = new Thread(() => startRecord(replay));
             thread.IsBackground = true;
@@ -76,6 +71,8 @@ namespace AnnieRecord
 
         private void startRecord(Replay replay)
         {
+            Thread.Sleep(5000);
+
             System.Diagnostics.Debug.WriteLine("start recording");
             int chunkId = 1;
             int keyFrameId = 1;
@@ -84,11 +81,11 @@ namespace AnnieRecord
                 replay.writeChunk(chunkId++);
                 replay.writeKeyFrame(keyFrameId++);
 
-                var lastChunkInfo = riot.findLastChunkInfo(game);
+                var lastChunkInfo = LastChunkInfo.find(game);
 
                 if (lastChunkInfo.isLastChunk())
                 {
-                    replay.writeLastChunkInfo();
+                    replay.writeChunk(lastChunkInfo.chunkId);
                     replay.close();
                     System.Diagnostics.Debug.WriteLine("end recording");
                     break;

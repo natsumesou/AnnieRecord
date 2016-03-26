@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AnnieRecord
+namespace AnnieRecord.riot.model
 {
-    public partial class Game : BaseModel
+    public partial class Game
     {
-        public static Game find(Summoner summoner)
+        public static Game findCurrent(Summoner summoner)
         {
-            var request = API.Instance.buildRequest("/observer-mode/rest/consumer/getSpectatorGameInfo/{platformId}/{summonerId}");
+            var request = Riot.Instance.buildRequest("/observer-mode/rest/consumer/getSpectatorGameInfo/{platformId}/{summonerId}");
             request.AddUrlSegment("summonerId", summoner.id.ToString());
-            request.AddUrlSegment("platformId", API.Instance.region.platform.ToString());
-            var response = API.Instance.apiClient.Execute<Game>(request);
+            request.AddUrlSegment("platformId", Riot.Instance.region.platform.ToString());
+            var response = Riot.Instance.apiClient.Execute<Game>(request);
             return response.Data;
         }
     }

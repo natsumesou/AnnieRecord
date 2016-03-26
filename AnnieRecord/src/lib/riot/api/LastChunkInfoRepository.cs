@@ -4,17 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AnnieRecord
+namespace AnnieRecord.riot.model
 {
-    public partial class LastChunkInfo : BaseModel
+    public partial class LastChunkInfo
     {
         public static LastChunkInfo find(Game game)
         {
-            var request = API.Instance.buildRequest("/observer-mode/rest/consumer/getLastChunkInfo/{platformId}/{gameId}/30000/token");
-            request.AddUrlSegment("platformId", API.Instance.region.platform.ToString());
-            request.AddUrlSegment("gameId", game.id.ToString());
-            var response = API.Instance.spectateClient.Execute<LastChunkInfo>(request);
-            lastResponse = response;
+            var request = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.getLastChunkInfo, game.id);
+            var response = Riot.Instance.spectateClient.Execute<LastChunkInfo>(request);
             return response.Data;
         }
     }

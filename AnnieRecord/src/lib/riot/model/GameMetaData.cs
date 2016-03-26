@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AnnieRecord
+namespace AnnieRecord.riot.model
 {
-    class GameMetaData
+    public class GameMetaData
     {
         public int startGameChunkId;
         public int endStartupChunkId;
