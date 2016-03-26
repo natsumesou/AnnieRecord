@@ -9,5 +9,6 @@
     <Grid>
         <TextBox Margin="36,97,27,160" FontSize="35" Name="summonerNameTextBox"></TextBox>
         <Button Margin="199,192,180,63" FontSize="20" Click="launch_replay">リプレイ起動</Button>
+        <Button Margin="387,200,27,72" FontSize="20" Click="record_by_current_game">手動録画</Button>
     </Grid>
 </Window>

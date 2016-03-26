@@ -15,12 +15,27 @@ namespace AnnieRecord
         private Summoner summoner;
         private Game game;
         private Thread thread;
+        private String recordDir;
+        private String clientDir;
+        private Replay replay;
 
-        public RecordService(Summoner s)
+        ///
+        /// <summary>
+        /// リプレイファイルを作成する
+        /// </summary>
+        /// <param name="s">録画対象のサモナーモデル</param>
+        /// <param name="clientDirectory">LoLのクライアントがインストールされているディレクトリ(デフォルトはC:\Riot Games)</param>
+        /// <param name="recordDirectory">録画ファイルを保存するディレクトリ</param>
+        public RecordService(Summoner s, String clientDirectory, String recordDirectory)
         {
             this.summoner = s;
+            this.recordDir = recordDirectory;
+            this.clientDir = clientDirectory;
         }
 
+        /// <summary>
+        /// LoLのクライアントが起動したら自動で録画処理を行う
+        /// </summary>
         public void watch()
         {
             ManagementEventWatcher startWatch = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace"));
@@ -30,6 +45,26 @@ namespace AnnieRecord
             ManagementEventWatcher stopWatch = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStopTrace"));
             stopWatch.EventArrived += new EventArrivedEventHandler(stopWatch_EventArrived);
             stopWatch.Start();
+        }
+
+        /// <summary>
+        /// LoLクライアントの起動を感知せず手動で録画開始する
+        /// </summary>
+        [Obsolete]
+        public void startRecord()
+        {
+            findAndPrepareGameInfo();
+        }
+
+        /// <summary>
+        /// リプレイファイルが書き込み中かどうか
+        /// </summary>
+        /// <returns></returns>
+        public bool isWriting()
+        {
+            if (replay == null)
+                return false;
+            return replay.isWriting();
         }
 
         private void startWatch_EventArrived(object sender, EventArrivedEventArgs e)
@@ -47,10 +82,10 @@ namespace AnnieRecord
 
         private void findAndPrepareGameInfoFromLocal()
         {
-            game = GameClient.createGameFromClientInfo(Riot.Instance.region);
-            if (Replay.isExist(game))
+            game = GameClient.createGameFromClientInfo(Riot.Instance.region, clientDir);
+            if (Replay.isExist(game, recordDir))
                 return;
-            var replay = Replay.create(game);
+            replay = Replay.create(game, recordDir);
 
             thread = new Thread(() => startRecord(replay));
             thread.IsBackground = true;
@@ -60,20 +95,22 @@ namespace AnnieRecord
         private void findAndPrepareGameInfo()
         {
             game = Game.findCurrent(summoner);
-            System.Diagnostics.Debug.WriteLine(game.encryptionKey);
-
-            var replay = Replay.create(game);
+            if(game.id == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("Currently not playing game");
+                return;
+            }
+            var replay = Replay.create(game, recordDir);
 
             thread = new Thread(() => startRecord(replay));
             thread.IsBackground = true;
             thread.Start();
         }
 
-        private void startRecord(Replay replay)
+        private void startRecord(Replay r)
         {
-            Thread.Sleep(5000);
-
             System.Diagnostics.Debug.WriteLine("start recording");
+            replay = r;
             int chunkId = 1;
             int keyFrameId = 1;
             while(true)

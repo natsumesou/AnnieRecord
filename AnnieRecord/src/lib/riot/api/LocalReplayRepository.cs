@@ -13,15 +13,16 @@ namespace AnnieRecord.riot.model
 {
     public partial class Replay
     {
-        private static readonly String REPLAY_DIR = Environment.CurrentDirectory + "\\replays";
         private static readonly String PATTERN = @"replay_(?<gameId>[0-9]+)_(?<platformId>.*)\.anr";
         private static readonly String METADATA_KEY = "metadata";
 
         private FileStream fileStream;
         private ZipOutputStream zipStream;
 
+        private String recordDir;
+
         private List<String> keys = new List<string>();
-        public static Replay find(String filename)
+        public static Replay find(String dir, String filename)
         {
             String gameId = "";
             String platformId = "";
@@ -32,7 +33,7 @@ namespace AnnieRecord.riot.model
             }
             var replay = new Replay(long.Parse(gameId), "", Region.fromPlatformString(platformId));
 
-            using (var zip = ZipFile.Read(REPLAY_DIR + "\\" + filename))
+            using (var zip = ZipFile.Read(dir + "\\" + filename))
             {
                 foreach (var e in zip)
                 {
@@ -49,9 +50,9 @@ namespace AnnieRecord.riot.model
             return replay;
         }
 
-        public static bool isExist(Game game)
+        public static bool isExist(Game game, String dir)
         {
-            return File.Exists(REPLAY_DIR + "\\" + Replay.filenameFromGame(game));
+            return File.Exists(dir + "\\" + Replay.filenameFromGame(game));
         }
 
         public void writeChunk(int chunkId)
@@ -68,6 +69,19 @@ namespace AnnieRecord.riot.model
         {
             zipStream.Close();
             fileStream.Close();
+        }
+
+        public bool isWriting()
+        {
+            try
+            {
+                var fs = new FileStream(recordDir + "\\" + filename, FileMode.Open);
+                fs.Close();
+            } catch(IOException)
+            {
+                return true;
+            }
+            return false;
         }
 
         private static void buildReplay(Replay replay, String filename, byte[] bytes)
@@ -98,11 +112,12 @@ namespace AnnieRecord.riot.model
             }
         }
 
-        private void createFile()
+        private void createFile(String dir)
         {
-            createDirectoryIfNotExist();
+            recordDir = dir;
+            createDirectoryIfNotExist(recordDir);
 
-            fileStream = new FileStream(REPLAY_DIR + "\\" + filename, FileMode.Create);
+            fileStream = new FileStream(dir + "\\" + filename, FileMode.Create);
             zipStream = new ZipOutputStream(fileStream);
             zipStream.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
 
@@ -126,11 +141,11 @@ namespace AnnieRecord.riot.model
             keys.Add(response.toSerializableString());
         }
 
-        private void createDirectoryIfNotExist()
+        private void createDirectoryIfNotExist(String dir)
         {
-            if (!Directory.Exists(REPLAY_DIR))
+            if (!Directory.Exists(dir))
             {
-                Directory.CreateDirectory(REPLAY_DIR);
+                Directory.CreateDirectory(dir);
             }
         }
     }

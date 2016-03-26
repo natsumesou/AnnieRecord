@@ -14,10 +14,10 @@ namespace AnnieRecord.riot.model
 {
     public partial class Replay
     {
-        public static Replay create(Game game)
+        public static Replay create(Game game, String dir)
         {
             var replay = new Replay(game.id, game.encryptionKey, Riot.Instance.region);
-            replay.createFile();
+            replay.createFile(dir);
 
             return replay;
         }

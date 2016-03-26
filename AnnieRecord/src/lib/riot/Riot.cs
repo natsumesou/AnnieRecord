@@ -39,10 +39,7 @@ namespace AnnieRecord.riot
             private set;
         }
 
-        private String apiKey
-        {
-            get { return "9655dc94-8557-43e7-9927-6606c68beb30"; }
-        }
+        private String apiKey;
 
         internal String spectateBasePath
         {
@@ -58,9 +55,15 @@ namespace AnnieRecord.riot
 
         private static readonly Lazy<Riot> lazy = new Lazy<Riot>(() => new Riot());
 
-        public void buildClient(Region region)
+        /// <summary>
+        /// Riotクライアントの設定
+        /// </summary>
+        /// <param name="region">クライアントを操作するRegion</param>
+        /// <param name="key">Riot Degveloperポータルで発行したapi key</param>
+        public void buildClient(Region region, String key)
         {
             this.region = region;
+            this.apiKey = key;
             apiClient = new RestClient(String.Format("https://{0}.api.pvp.net/", this.region.type.ToString()));
 
             if (region.type == Region.Type.jp)
