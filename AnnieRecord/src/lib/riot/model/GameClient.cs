@@ -74,7 +74,7 @@ namespace AnnieRecord.riot.model
         public static void LaunchReplay(Replay replay, String clientBaseDir)
         {
             var arguments = "";
-            var spectArgs = String.Format("spectator {0}:{1} {2} {3} {4}", Server.HOST, Server.PORT, replay.encryptionKey, replay.gameId, replay.region.platform);
+            var spectArgs = String.Format("spectator {0}:{1} {2} {3} {4}", Server.HOST, Server.localPort, replay.encryptionKey, replay.gameId, replay.region.platform);
             String[] args = new string[] { "8394", "LoLPatcher.exe", "", spectArgs };
             foreach (string arg in args)
                 arguments += "\"" + arg + "\" ";

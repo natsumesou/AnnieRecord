@@ -14,22 +14,32 @@ namespace AnnieRecord
     public class Server
     {
         public static readonly String HOST = "localhost";
-        public static readonly String PORT = "55555";
 
         private HttpListener listener;
         private Replay replay;
         private Thread thread;
 
+        private int localPort;
+
         private bool isLastChunkReqeust = false;
         private bool isLastKeyFrameReqauest = false;
 
-        public Server()
+        /// <summary>
+        /// リプレイデータを返すローカルサーバーの起動
+        /// </summary>
+        /// <param name="port">ポート番号の指定</param>
+        public Server(int port = 55555)
         {
+            localPort = port;
             listener = new HttpListener();
-            listener.Prefixes.Add(String.Format("http://{0}:{1}/", HOST, PORT));
+            listener.Prefixes.Add(String.Format("http://{0}:{1}/", HOST, localPort));
             listener.Start();
         }
 
+        /// <summary>
+        /// リプレイデータをセットしてサーバを有効化
+        /// </summary>
+        /// <param name="r">リプレイ対象データ</param>
         public void run(Replay r)
         {
             replay = r;
