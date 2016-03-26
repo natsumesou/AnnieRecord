@@ -22,9 +22,9 @@ namespace AnnieRecord.riot.model
         public SortedDictionary<int, byte[]> chunks;
         public SortedDictionary<int, byte[]> keyFrames;
 
-        private readonly int FIRST_SEVERAL_CHUNK_INTERVAL = 30000;
+        private readonly int FIRST_SEVERAL_CHUNK_INTERVAL = 60000;
         private readonly int CHUNK_INTERVAL = 500;
-        private readonly int SEVERAL_COUNT = 2;
+        private readonly int SEVERAL_COUNT = 3;
 
         public int firstChunkId
         {

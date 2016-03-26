@@ -23,16 +23,16 @@ namespace AnnieRecord
         private bool isLastChunkReqeust = false;
         private bool isLastKeyFrameReqauest = false;
 
-        public Server(Replay r)
+        public Server()
         {
-            replay = r;
             listener = new HttpListener();
             listener.Prefixes.Add(String.Format("http://{0}:{1}/", HOST, PORT));
             listener.Start();
         }
 
-        public void run()
+        public void run(Replay r)
         {
+            replay = r;
             thread = new Thread(runServer);
             thread.IsBackground = true;
             thread.Start();

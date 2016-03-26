@@ -22,9 +22,12 @@ namespace AnnieRecord
     /// </summary>
     public partial class MainWindow : Window
     {
+        Server server;
+
         public MainWindow()
         {
             InitializeComponent();
+            server = new Server();
             startWatch();
         }
 
@@ -44,9 +47,7 @@ namespace AnnieRecord
             var filename = summonerNameTextBox.Text;
             var replay = Replay.find(filename);
 
-            var server = new Server(replay);
-            server.run();
-
+            server.run(replay);
             GameClient.LaunchReplay(replay);
         }
     }
