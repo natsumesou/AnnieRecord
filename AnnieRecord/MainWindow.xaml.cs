@@ -44,7 +44,7 @@ namespace AnnieRecord
             System.Diagnostics.Debug.WriteLine(summoner.id);
 
             record = new RecordService(summoner, loldir, REPLAY_DIR);
-            record.watch();
+            record.watchLocalAnnieRecordFile();
         }
 
         private void record_by_current_game(object sender, RoutedEventArgs e)

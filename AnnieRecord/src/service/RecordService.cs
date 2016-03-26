@@ -35,16 +35,24 @@ namespace AnnieRecord
 
         /// <summary>
         /// LoLのクライアントが起動したら自動で録画処理を行う
+        /// API軽油でゲーム情報を取得する
         /// </summary>
         public void watch()
         {
             ManagementEventWatcher startWatch = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace"));
             startWatch.EventArrived += new EventArrivedEventHandler(startWatch_EventArrived);
             startWatch.Start();
+        }
 
-            ManagementEventWatcher stopWatch = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStopTrace"));
-            stopWatch.EventArrived += new EventArrivedEventHandler(stopWatch_EventArrived);
-            stopWatch.Start();
+        /// <summary>
+        /// LoLのクライアントが起動したら児童で録画処理を行う
+        /// ローカルのAnnieRecrdファイルからゲームデータを取得する
+        /// </summary>
+        [Obsolete]
+        public void watchLocalAnnieRecordFile() {
+            ManagementEventWatcher startWatch = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace"));
+            startWatch.EventArrived += new EventArrivedEventHandler(startWatch_EventArrived_Local);
+            startWatch.Start();
         }
 
         /// <summary>
@@ -71,13 +79,15 @@ namespace AnnieRecord
         {
             if (!e.NewEvent.Properties["ProcessName"].Value.Equals(GameClient.CLIENT_NAME))
                 return;
-            findAndPrepareGameInfoFromLocal();
+            findAndPrepareGameInfo();
         }
 
-        private void stopWatch_EventArrived(object sender, EventArrivedEventArgs e)
+        [Obsolete]
+        private void startWatch_EventArrived_Local(object sender, EventArrivedEventArgs e)
         {
             if (!e.NewEvent.Properties["ProcessName"].Value.Equals(GameClient.CLIENT_NAME))
                 return;
+            findAndPrepareGameInfoFromLocal();
         }
 
         private void findAndPrepareGameInfoFromLocal()
