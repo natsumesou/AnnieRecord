@@ -39,6 +39,15 @@ namespace AnnieRecord.riot
             private set;
         }
 
+        internal RestClient globalApiClient
+        {
+            get;
+            private set;
+        }
+
+        public readonly String apiClientVersion = "v1.4";
+        public readonly String globalApiClientVersion = "v1.2";
+
         private String apiKey;
 
         internal String spectateBasePath
@@ -65,6 +74,7 @@ namespace AnnieRecord.riot
             this.region = region;
             this.apiKey = key;
             apiClient = new RestClient(String.Format("https://{0}.api.pvp.net/", this.region.type.ToString()));
+            globalApiClient = new RestClient("https://global.api.pvp.net/");
 
             if (region.type == Region.Type.jp)
             {

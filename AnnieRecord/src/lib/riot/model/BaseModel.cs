@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace AnnieRecord.riot.model
 {
+    [Serializable]
     public partial class BaseModel
     {
         public BaseModel() { }

@@ -68,7 +68,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="src\lib\riot\api\ChampionRepository.cs" />
     <Compile Include="src\lib\riot\api\LocalReplayRepository.cs" />
+    <Compile Include="src\lib\riot\model\Champion.cs" />
+    <Compile Include="src\lib\riot\model\Participant.cs" />
+    <Compile Include="src\lib\riot\model\RecordMetaData.cs" />
     <Compile Include="src\lib\riot\Riot.cs" />
     <Compile Include="src\lib\riot\api\GameRepository.cs" />
     <Compile Include="src\lib\riot\api\LastChunkInfoRepository.cs" />

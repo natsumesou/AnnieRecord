@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace AnnieRecord.riot.model
 {
+    [Serializable]
     public class Region : BaseModel
     {
         public enum Type { br, eune, euw, kr, lan, las, na, oce, ru, tr, jp };

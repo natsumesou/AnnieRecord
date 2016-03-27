@@ -12,10 +12,8 @@ namespace AnnieRecord.riot.model
 {
     public partial class Replay : BaseModel
     {
-        public long gameId;
-        public Region region;
-        public String encryptionKey;
-        public byte[] metadata;
+        public Game game;
+        public byte[] gameMetaData;
         public byte[] version;
         public int chunkIndex;
         public int keyFrameIndex;
@@ -54,13 +52,13 @@ namespace AnnieRecord.riot.model
         }
 
         GameMetaData _metaData;
-        private GameMetaData metaData
+        private GameMetaData deserializedGameMetaData
         {
             get
             {
                 if (_metaData == null)
                 {
-                    var json = Encoding.ASCII.GetString(metadata);
+                    var json = Encoding.ASCII.GetString(gameMetaData);
                     _metaData = JsonConvert.DeserializeObject<GameMetaData>(json);
                 }
                 return _metaData; 
@@ -73,7 +71,7 @@ namespace AnnieRecord.riot.model
         {
             get
             {
-                return String.Format(FILENAME_FORMAT, gameId, region.platform);
+                return String.Format(FILENAME_FORMAT, game.id, game.region.platform);
             }
         }
 
@@ -82,18 +80,17 @@ namespace AnnieRecord.riot.model
             return String.Format(FILENAME_FORMAT, game.id, game.platformId);
         }
 
-        public Replay(long id, String encryptionKeyStr, Region reg)
+        public Replay()
         {
-            gameId = id;
-            encryptionKey = encryptionKeyStr;
-            region = reg;
             chunks = new SortedDictionary<int, byte[]>();
             keyFrames = new SortedDictionary<int, byte[]>();
         }
 
-        public void buildEncryptionKey(String key)
+        public Replay(Game replayGame)
         {
-            encryptionKey = key;
+            game = replayGame;
+            chunks = new SortedDictionary<int, byte[]>();
+            keyFrames = new SortedDictionary<int, byte[]>();
         }
 
         public byte[] getLastChunkInfo()
@@ -130,8 +127,8 @@ namespace AnnieRecord.riot.model
                 nextInterval,
                 keyFrameId,
                 nextChunkId,
-                metaData.endStartupChunkId,
-                metaData.startGameChunkId,
+                deserializedGameMetaData.endStartupChunkId,
+                deserializedGameMetaData.startGameChunkId,
                 lastChunkId
                 );
             if (chunkIndex < chunks.Count - 1)

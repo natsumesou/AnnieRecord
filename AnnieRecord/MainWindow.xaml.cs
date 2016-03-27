@@ -32,6 +32,11 @@ namespace AnnieRecord
         {
             InitializeComponent();
             server = new Server();
+
+            Riot.Instance.buildClient(new Region(Region.Type.jp), API_KEY);
+            var c = Champion.find(1040);
+            System.Diagnostics.Debug.WriteLine(c.name);
+
             //startWatch();
         }
 
@@ -64,7 +69,7 @@ namespace AnnieRecord
             var replay = Replay.find(REPLAY_DIR, filename);
 
             server.run(replay);
-            GameClient.LaunchReplay(replay, loldir);
+            GameClient.LaunchReplay(replay, server, loldir);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace AnnieRecord
         private Replay replay;
         private Thread thread;
 
-        private int localPort;
+        public int localPort;
 
         private bool isLastChunkReqeust = false;
         private bool isLastKeyFrameReqauest = false;
@@ -68,7 +68,7 @@ namespace AnnieRecord
                     else if (context.Request.RawUrl.Contains(SPECTATE_METHOD.getGameMetaData.ToString()))
                     {
                         response.AddHeader("Content-Type", "application/json");
-                        buffer = replay.metadata;
+                        buffer = replay.gameMetaData;
                     }
                     else if (context.Request.RawUrl.Contains(SPECTATE_METHOD.getLastChunkInfo.ToString()))
                     {

@@ -16,7 +16,7 @@ namespace AnnieRecord.riot.model
     {
         public static Replay create(Game game, String dir)
         {
-            var replay = new Replay(game.id, game.encryptionKey, Riot.Instance.region);
+            var replay = new Replay(game);
             replay.createFile(dir);
 
             return replay;
@@ -24,19 +24,19 @@ namespace AnnieRecord.riot.model
 
         private IRestResponse findVersion()
         {
-            var versionRequest = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.version, gameId);
+            var versionRequest = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.version, game.id);
             return Riot.Instance.spectateClient.Execute(versionRequest);
         }
 
         private IRestResponse findMetaData()
         {
-            var metaRequest = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.getGameMetaData, gameId);
+            var metaRequest = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.getGameMetaData, game.id);
             return Riot.Instance.spectateClient.Execute(metaRequest);
         }
 
         private IRestResponse findChunk(int chunkId)
         {
-            var request = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.getGameDataChunk, gameId);
+            var request = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.getGameDataChunk, game.id);
             request.AddUrlSegment("chunkId", chunkId.ToString());
 
             return Riot.Instance.spectateClient.Execute(request);
@@ -44,7 +44,7 @@ namespace AnnieRecord.riot.model
 
         private IRestResponse findKeyFrae(int keyFrameId)
         {
-            var request = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.getKeyFrame, gameId);
+            var request = Riot.Instance.buildSpectateRequest(SPECTATE_METHOD.getKeyFrame, game.id);
             request.AddUrlSegment("keyFrameId", keyFrameId.ToString());
 
             return Riot.Instance.spectateClient.Execute(request);

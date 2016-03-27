@@ -70,11 +70,12 @@ namespace AnnieRecord.riot.model
         /// リプレイの起動
         /// </summary>
         /// <param name="replay">リプレイデータが入ったModel</param>
+        /// <param name="server">起動中のServerインスタンス</param>
         /// <param name="clientBaseDir">LoLのクライアントディレクトリ</param>
-        public static void LaunchReplay(Replay replay, String clientBaseDir)
+        public static void LaunchReplay(Replay replay, Server server, String clientBaseDir)
         {
             var arguments = "";
-            var spectArgs = String.Format("spectator {0}:{1} {2} {3} {4}", Server.HOST, Server.localPort, replay.encryptionKey, replay.gameId, replay.region.platform);
+            var spectArgs = String.Format("spectator {0}:{1} {2} {3} {4}", Server.HOST, server.localPort, replay.game.encryptionKey, replay.game.id, replay.game.region.platform);
             String[] args = new string[] { "8394", "LoLPatcher.exe", "", spectArgs };
             foreach (string arg in args)
                 arguments += "\"" + arg + "\" ";

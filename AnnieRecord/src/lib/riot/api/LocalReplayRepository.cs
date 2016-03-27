@@ -31,7 +31,7 @@ namespace AnnieRecord.riot.model
                 gameId = m.Groups["gameId"].Value;
                 platformId = m.Groups["platformId"].Value;
             }
-            var replay = new Replay(long.Parse(gameId), "", Region.fromPlatformString(platformId));
+            var replay = new Replay();
 
             using (var zip = ZipFile.Read(dir + "\\" + filename))
             {
@@ -88,7 +88,7 @@ namespace AnnieRecord.riot.model
         {
             if (filename.Contains(METADATA_KEY))
             {
-                replay.encryptionKey = Encoding.ASCII.GetString(bytes);
+                replay.game = Game.fromBytes(bytes);
             }
             else if (filename.Contains(SPECTATE_METHOD.version.ToString()))
             {
@@ -96,7 +96,7 @@ namespace AnnieRecord.riot.model
             }
             else if (filename.Contains(SPECTATE_METHOD.getGameMetaData.ToString()))
             {
-                replay.metadata = bytes;
+                replay.gameMetaData = bytes;
             }
             else if (filename.Contains(SPECTATE_METHOD.getGameDataChunk.ToString()))
             {
@@ -122,7 +122,7 @@ namespace AnnieRecord.riot.model
             zipStream.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
 
             zipStream.PutNextEntry(METADATA_KEY);
-            byte[] buffer = Encoding.ASCII.GetBytes(encryptionKey);
+            byte[] buffer = game.getBytes();
             zipStream.Write(buffer, 0, buffer.Length);
 
             write(findVersion());

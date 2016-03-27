@@ -11,8 +11,9 @@ namespace AnnieRecord.riot.model
     {
         public static Summoner find(String summonerName)
         {
-            var request = Riot.Instance.buildRequest("/api/lol/{region}/v1.4/summoner/by-name/{summonerName}");
+            var request = Riot.Instance.buildRequest("/api/lol/{region}/{version}/summoner/by-name/{summonerName}");
             request.AddUrlSegment("summonerName", summonerName);
+            request.AddUrlSegment("version", Riot.Instance.apiClientVersion);
             request.AddUrlSegment("region", Riot.Instance.region.type.ToString());
             request.RootElement = summonerName.ToLower().Replace(" ", String.Empty);
             var response = Riot.Instance.apiClient.Execute<Summoner>(request);
