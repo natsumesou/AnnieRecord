@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,37 +12,44 @@ namespace AnnieRecord.riot.model
     {
         public enum TEAM { BLUE, PURPLE }
 
+        [JsonProperty("summonerName")]
         public String summonerName
         {
             get;
             private set;
         }
+        [JsonProperty("championId")]
         public long championId
         {
             get;
             private set;
         }
+        [JsonProperty("teamId")]
         public long teamId
         {
             get;
             private set;
         }
+        [JsonProperty("summonerId")]
         public long summonerId
         {
             get;
             private set;
         }
+        [JsonProperty("spell1Id")]
         public long spell1Id
         {
             get;
             private set;
         }
+        [JsonProperty("spell2Id")]
         public long spell2Id
         {
             get;
             private set;
         }
 
+        [JsonProperty("_team")]
         private TEAM? _team;
         public TEAM? team
         {
@@ -53,11 +61,6 @@ namespace AnnieRecord.riot.model
                 }
                 return _team;
             }
-        }
-
-        public bool isTarget(Summoner summoner)
-        {
-            return summonerId == summoner.id;
         }
     }
 }

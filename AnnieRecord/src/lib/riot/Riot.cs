@@ -45,9 +45,6 @@ namespace AnnieRecord.riot
             private set;
         }
 
-        public readonly String apiClientVersion = "v1.4";
-        public readonly String globalApiClientVersion = "v1.2";
-
         private String apiKey;
 
         internal String spectateBasePath
@@ -125,9 +122,9 @@ namespace AnnieRecord.riot
         internal static int getResourceIdByPath(String path)
         {
             int id = 0;
-            foreach (Match m in Regex.Matches(path, RESOURCE_PATTERN))
+            foreach (System.Text.RegularExpressions.Match m in Regex.Matches(path, RESOURCE_PATTERN))
             {
-                id = Int32.Parse(m.Groups["id"].Value);
+                id = int.Parse(m.Groups["id"].Value);
             }
             return id;
         }

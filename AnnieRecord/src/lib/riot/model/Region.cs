@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,12 +13,14 @@ namespace AnnieRecord.riot.model
         public enum Type { br, eune, euw, kr, lan, las, na, oce, ru, tr, jp };
         public enum Platform { NA1, BR1, LA1, LA2, OC1, EUN1, TR1, RU, EUW1, KR, JP1 };
 
+        [JsonProperty("type")]
         public Type type
         {
             get;
             private set;
         }
 
+        [JsonProperty("platform")]
         public Platform platform
         {
             get;

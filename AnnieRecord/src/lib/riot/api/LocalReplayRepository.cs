@@ -14,7 +14,7 @@ namespace AnnieRecord.riot.model
     public partial class Replay
     {
         private static readonly String PATTERN = @"replay_(?<gameId>[0-9]+)_(?<platformId>.*)\.anr";
-        private static readonly String METADATA_KEY = "metadata";
+        public static readonly String TEMP_FILENAME = "temp.anr";
 
         private FileStream fileStream;
         private ZipOutputStream zipStream;
@@ -22,18 +22,39 @@ namespace AnnieRecord.riot.model
         private String recordDir;
 
         private List<String> keys = new List<string>();
-        public static Replay find(String dir, String filename)
+
+        /// <summary>
+        /// リプレイのメタデータのみ格納したインスタンスを返す
+        /// </summary>
+        /// <param name="dir">リプレイがおかれているディレクトリ</param>
+        /// <param name="file">該当のリプレイファイル名</param>
+        /// <returns></returns>
+        public static Replay find(String dir, String file)
         {
             String gameId = "";
             String platformId = "";
-            foreach (Match m in Regex.Matches(filename, PATTERN))
+            foreach (System.Text.RegularExpressions.Match m in Regex.Matches(file, PATTERN))
             {
                 gameId = m.Groups["gameId"].Value;
                 platformId = m.Groups["platformId"].Value;
             }
-            var replay = new Replay();
 
-            using (var zip = ZipFile.Read(dir + "\\" + filename))
+            Game gameObject;
+            using (var sr = new StreamReader(dir + "\\" + file))
+            {
+                gameObject = Game.fromString(sr.ReadLine());
+            }
+
+            var replay = new Replay() { recordDir = dir, game = gameObject };
+            return replay;
+        }
+
+        /// <summary>
+        /// ゲームのリプレイデータをロードする
+        /// </summary>
+        public void loadPlayData()
+        {
+            using (var zip = ZipFile.Read(recordDir + "\\" + filename))
             {
                 foreach (var e in zip)
                 {
@@ -42,12 +63,11 @@ namespace AnnieRecord.riot.model
                         using (var ms = new MemoryStream())
                         {
                             ccs.CopyTo(ms);
-                            buildReplay(replay, e.FileName, ms.ToArray());
+                            buildReplay(e.FileName, ms.ToArray());
                         }
                     }
                 }
             }
-            return replay;
         }
 
         public static bool isExist(Game game, String dir)
@@ -65,17 +85,17 @@ namespace AnnieRecord.riot.model
             write(findKeyFrae(keyFrameId));
         }
 
-        public void close()
+        public void exportANRFile(Game gameResult)
         {
-            zipStream.Close();
-            fileStream.Close();
+            close();
+            copyByteDataFromTemp(gameResult);
         }
 
         public bool isWriting()
         {
             try
             {
-                var fs = new FileStream(recordDir + "\\" + filename, FileMode.Open);
+                var fs = new FileStream(recordDir + "\\" + TEMP_FILENAME, FileMode.Open);
                 fs.Close();
             } catch(IOException)
             {
@@ -84,27 +104,73 @@ namespace AnnieRecord.riot.model
             return false;
         }
 
-        private static void buildReplay(Replay replay, String filename, byte[] bytes)
+        public void abort()
         {
-            if (filename.Contains(METADATA_KEY))
+            close();
+            deleteTempFile();
+            File.Delete(recordDir + "\\" + filename);
+        }
+
+        private void deleteTempFile()
+        {
+            File.Delete(recordDir + "\\" + TEMP_FILENAME);
+        }
+
+        private void close()
+        {
+            zipStream.Close();
+            fileStream.Close();
+        }
+
+        private void copyByteDataFromTemp(Game gameResult)
+        {
+            var fs = new FileStream(recordDir + "\\" + filename, FileMode.Create);
+            var sw = new StreamWriter(fs);
+            sw.WriteLine(gameResult.toJsonString());
+            sw.Close();
+            fs.Close();
+
+            fs = new FileStream(recordDir + "\\" + filename, FileMode.Append);
+            var zs = new ZipOutputStream(fs);
+            using (var zip = ZipFile.Read(recordDir + "\\" + TEMP_FILENAME))
             {
-                replay.game = Game.fromBytes(bytes);
+                foreach (var e in zip)
+                {
+                    using (CrcCalculatorStream ccs = e.OpenReader())
+                    {
+                        using (var ms = new MemoryStream())
+                        {
+                            ccs.CopyTo(ms);
+                            var bytes = ms.ToArray();
+                            zs.PutNextEntry(e.FileName);
+                            zs.Write(bytes, 0, bytes.Length);
+                        }
+                    }
+                }
             }
-            else if (filename.Contains(SPECTATE_METHOD.version.ToString()))
+            zs.Close();
+            fs.Close();
+
+            deleteTempFile();
+        }
+
+        private void buildReplay(String filename, byte[] bytes)
+        {
+            if (filename.Contains(SPECTATE_METHOD.version.ToString()))
             {
-                replay.version = bytes;
+                this.version = bytes;
             }
             else if (filename.Contains(SPECTATE_METHOD.getGameMetaData.ToString()))
             {
-                replay.gameMetaData = bytes;
+                this.gameMetaData = bytes;
             }
             else if (filename.Contains(SPECTATE_METHOD.getGameDataChunk.ToString()))
             {
-                replay.chunks.Add(Riot.getResourceIdByPath(filename), bytes);
+                this.chunks.Add(Riot.getResourceIdByPath(filename), bytes);
             }
             else if (filename.Contains(SPECTATE_METHOD.getKeyFrame.ToString()))
             {
-                replay.keyFrames.Add(Riot.getResourceIdByPath(filename), bytes);
+                this.keyFrames.Add(Riot.getResourceIdByPath(filename), bytes);
             }
             else
             {
@@ -117,13 +183,14 @@ namespace AnnieRecord.riot.model
             recordDir = dir;
             createDirectoryIfNotExist(recordDir);
 
-            fileStream = new FileStream(dir + "\\" + filename, FileMode.Create);
+            var fs = new FileStream(dir + "\\" + filename, FileMode.Create);
+            var sw = new StreamWriter(fs);
+            sw.WriteLine(game.toJsonString());
+            sw.Close();
+
+            fileStream = new FileStream(dir + "\\" + TEMP_FILENAME, FileMode.Create);
             zipStream = new ZipOutputStream(fileStream);
             zipStream.CompressionLevel = Ionic.Zlib.CompressionLevel.None;
-
-            zipStream.PutNextEntry(METADATA_KEY);
-            byte[] buffer = game.getBytes();
-            zipStream.Write(buffer, 0, buffer.Length);
 
             write(findVersion());
             write(findMetaData());

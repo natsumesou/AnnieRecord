@@ -15,6 +15,7 @@ namespace AnnieRecord.riot.model
     public partial class Champion
     {
         private static readonly String FILENAME = "champions.anr";
+        private static readonly String METHOD_VERSION = "v1.2";
 
         /// <summary>
         /// チャンピオン情報の取得
@@ -66,7 +67,7 @@ namespace AnnieRecord.riot.model
         private static Dictionary<long, Champion> findFromAPI()
         {
             var request = Riot.Instance.buildRequest("/api/lol/static-data/{region}/{version}/champion");
-            request.AddUrlSegment("version", Riot.Instance.globalApiClientVersion);
+            request.AddUrlSegment("version", METHOD_VERSION);
             request.AddUrlSegment("region", Riot.Instance.region.type.ToString());
             request.RootElement = "data";
             var response = Riot.Instance.apiClient.Execute<Dictionary<string, Champion>>(request);

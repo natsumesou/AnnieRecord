@@ -1,4 +1,5 @@
-﻿using RestSharp.Deserializers;
+﻿using Newtonsoft.Json;
+using RestSharp.Deserializers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,39 +17,63 @@ namespace AnnieRecord.riot.model
         public enum Type { CUSTOM_GAME, MATCHED_GAME, TUTORIAL_GAME };  
 
         [DeserializeAs(Name = "gameId")]
+        [JsonProperty("id")]
         public long id
         {
             get;
-            private set;
+            set;
         }
+        [JsonProperty("mode")]
         public Mode mode
         {
             get;
             private set;
         }
-        public string platformId
+        [JsonProperty("platformId")]
+        private string platformId
         {
             get;
-            private set;
+            set;
         }
+        [JsonProperty("type")]
         public Type type
         {
             get;
             private set;
         }
+        [JsonProperty("recordStartTime")]
+        public DateTime recordStartTime
+        {
+            get;
+            private set;
+        }
+
         [DeserializeAs(Name = "observers.encryptionKey")]
+        [JsonProperty("encryptionKey")]
         public String encryptionKey
         {
             get;
             private set;
         }
-
+        [JsonProperty("participants")]
         public List<Participant> participants
         {
             get;
             private set;
         }
-
+        [JsonProperty("player")]
+        public Participant player
+        {
+            get;
+            private set;
+        }
+        [JsonProperty("won")]
+        public bool won
+        {
+            get;
+            private set;
+        }
+        [JsonProperty("_region")]
         private Region _region;
         public Region region
         {
@@ -62,13 +87,19 @@ namespace AnnieRecord.riot.model
             }
         }
 
-        public static Game fromBytes(byte[] bytes)
+        public Game()
         {
-            var bf = new BinaryFormatter();
-            using(var ms = new MemoryStream(bytes))
-            {
-                return (Game)bf.Deserialize(ms);
-            }
+            recordStartTime = DateTime.Now;
+        }
+
+        public void buildMatchData(Match match)
+        {
+            this.won = match.won(player);
+        }
+
+        public static Game fromString(String str)
+        {
+            return JsonConvert.DeserializeObject<Game>(str);
         }
 
         [Obsolete]
@@ -76,15 +107,10 @@ namespace AnnieRecord.riot.model
         {
             return new Game() { id = gameId, encryptionKey = key, platformId = platform };
         }
-
-        public byte[] getBytes()
+        
+        public String toJsonString()
         {
-            var bf = new BinaryFormatter();
-            using(var ms = new MemoryStream())
-            {
-                bf.Serialize(ms, this);
-                return ms.ToArray();
-            }
+            return JsonConvert.SerializeObject(this);
         }
     }
 }

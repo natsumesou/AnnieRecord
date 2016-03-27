@@ -77,7 +77,7 @@ namespace AnnieRecord.riot.model
 
         public static String filenameFromGame(Game game)
         {
-            return String.Format(FILENAME_FORMAT, game.id, game.platformId);
+            return String.Format(FILENAME_FORMAT, game.id, game.region.platform);
         }
 
         public Replay()

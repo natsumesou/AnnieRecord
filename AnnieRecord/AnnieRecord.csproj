@@ -71,8 +71,9 @@
     <Compile Include="src\lib\riot\api\ChampionRepository.cs" />
     <Compile Include="src\lib\riot\api\LocalReplayRepository.cs" />
     <Compile Include="src\lib\riot\model\Champion.cs" />
+    <Compile Include="src\lib\riot\model\Match.cs" />
+    <Compile Include="src\lib\riot\model\GameTeam.cs" />
     <Compile Include="src\lib\riot\model\Participant.cs" />
-    <Compile Include="src\lib\riot\model\RecordMetaData.cs" />
     <Compile Include="src\lib\riot\Riot.cs" />
     <Compile Include="src\lib\riot\api\GameRepository.cs" />
     <Compile Include="src\lib\riot\api\LastChunkInfoRepository.cs" />
@@ -88,8 +89,8 @@
     <Compile Include="src\lib\riot\model\Summoner.cs" />
     <Compile Include="src\lib\RestSharp\RestSharpExtensions.cs" />
     <Compile Include="src\lib\System\Extensions.cs" />
-    <Compile Include="src\server\Server.cs" />
-    <Compile Include="src\service\RecordService.cs" />
+    <Compile Include="src\Server.cs" />
+    <Compile Include="src\Record.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

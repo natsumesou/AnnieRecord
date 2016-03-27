@@ -10,7 +10,7 @@ using AnnieRecord.riot.model;
 
 namespace AnnieRecord
 {
-    public class RecordService
+    public class Record
     {
         private Summoner summoner;
         private Game game;
@@ -26,7 +26,7 @@ namespace AnnieRecord
         /// <param name="s">録画対象のサモナーモデル</param>
         /// <param name="clientDirectory">LoLのクライアントがインストールされているディレクトリ(デフォルトはC:\Riot Games)</param>
         /// <param name="recordDirectory">録画ファイルを保存するディレクトリ</param>
-        public RecordService(Summoner s, String clientDirectory, String recordDirectory)
+        public Record(Summoner s, String clientDirectory, String recordDirectory)
         {
             this.summoner = s;
             this.recordDir = recordDirectory;
@@ -42,6 +42,19 @@ namespace AnnieRecord
             ManagementEventWatcher startWatch = new ManagementEventWatcher(new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace"));
             startWatch.EventArrived += new EventArrivedEventHandler(startWatch_EventArrived);
             startWatch.Start();
+        }
+
+        /// <summary>
+        /// 途中でも録画を終了する
+        /// 録画中のファイルは削除される
+        /// </summary>
+        public void abort()
+        {
+            thread.Abort();
+            if (isRecording())
+            {
+                replay.abort();
+            }
         }
 
         /// <summary>
@@ -68,11 +81,13 @@ namespace AnnieRecord
         /// リプレイファイルが書き込み中かどうか
         /// </summary>
         /// <returns></returns>
-        public bool isWriting()
+        public bool isRecording()
         {
             if (replay == null)
                 return false;
-            return replay.isWriting();
+            if (thread == null)
+                return false;
+            return thread.IsAlive && replay.isWriting();
         }
 
         private void startWatch_EventArrived(object sender, EventArrivedEventArgs e)
@@ -105,7 +120,7 @@ namespace AnnieRecord
         private void findAndPrepareGameInfo()
         {
             game = Game.findCurrent(summoner);
-            if(game.id == 0)
+            if(game == null)
             {
                 System.Diagnostics.Debug.WriteLine("Currently not playing game");
                 return;
@@ -119,7 +134,7 @@ namespace AnnieRecord
 
         private void startRecord(Replay r)
         {
-            System.Diagnostics.Debug.WriteLine("start recording");
+            System.Diagnostics.Debug.WriteLine("start recording: " + r.game.player.summonerName);
             replay = r;
             int chunkId = 1;
             int keyFrameId = 1;
@@ -127,13 +142,16 @@ namespace AnnieRecord
             {
                 replay.writeChunk(chunkId++);
                 replay.writeKeyFrame(keyFrameId++);
+                System.Diagnostics.Debug.WriteLine("writing chunk: " + chunkId);
 
                 var lastChunkInfo = LastChunkInfo.find(game);
 
                 if (lastChunkInfo.isLastChunk())
                 {
                     replay.writeChunk(lastChunkInfo.chunkId);
-                    replay.close();
+                    var match = Game.findMatch(game);
+                    game.buildMatchData(match);
+                    replay.exportANRFile(game);
                     System.Diagnostics.Debug.WriteLine("end recording");
                     break;
                 }
